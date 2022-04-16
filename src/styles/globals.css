@@ -13,4 +13,29 @@ a {
 
 * {
   box-sizing: border-box;
+  scrollbar-width: none;
+    transition: all 0.3s ease-in-out;
+}
+
+*::-webkit-scrollbar {
+    display: none;
+    width: 0px;
+}
+
+
+.wallet-adapter-button:hover {
+    opacity: 0.9;
+    background: #111 !important;
+}
+
+.wallet-adapter-button {
+    opacity: 0.65;
+    background-color: transparent !important;
+    border-radius: 10rem !important;
+    transition: all 0.2s ease-in-out;
+    font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif !important;
+}
+
+.wallet-adapter-dropdown-list {
+    background-color: #10141f !important;
 }
