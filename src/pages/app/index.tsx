@@ -90,7 +90,7 @@ export const AppScaffold: FC<{
 
 
 const icons = {
-    home: <svg stroke="currentColor" fill="none" stroke-width="0" viewBox="0 0 24 24" height="21" width="21" xmlns="http://www.w3.org/2000/svg"><path stroke="currentColor" stroke-width="2" d="M1 22V9.76a2 2 0 01.851-1.636l9.575-6.72a1 1 0 011.149 0l9.574 6.72A2 2 0 0123 9.76V22a1 1 0 01-1 1h-5.333a1 1 0 01-1-1v-5.674a1 1 0 00-1-1H9.333a1 1 0 00-1 1V22a1 1 0 01-1 1H2a1 1 0 01-1-1z"></path></svg>,
+    home: <svg stroke="currentColor" fill="none" strokeWidth="0" viewBox="0 0 24 24" height="21" width="21" xmlns="http://www.w3.org/2000/svg"><path stroke="currentColor" strokeWidth="2" d="M1 22V9.76a2 2 0 01.851-1.636l9.575-6.72a1 1 0 011.149 0l9.574 6.72A2 2 0 0123 9.76V22a1 1 0 01-1 1h-5.333a1 1 0 01-1-1v-5.674a1 1 0 00-1-1H9.333a1 1 0 00-1 1V22a1 1 0 01-1 1H2a1 1 0 01-1-1z"></path></svg>,
     explore: <MdExplore size={21} />,
     profile: <BsFillPersonFill size={21} />,
 }
@@ -121,7 +121,7 @@ const NavLink: FC<{
 
     return (
         <>
-            <Link href={href}>
+            <Link href={href} passHref>
                 <Button light={style == "normal" || style == "disabled"} bordered={style == "active"} disabled={disabled}>
                     <Row css={{ color: state[style] }} align="center">
                         {
@@ -190,7 +190,7 @@ const NewTweetBox = () => {
                 <Row align="center" justify="center">
                     {
                         value.length == 0 &&
-                        <img width={45} src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} />
+                        <img width={45} alt="" src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} />
                     }
 
                     <textarea
@@ -367,7 +367,7 @@ const Navbar = () => {
             position: "fixed", top: 0, left: 0, width: "100%", padding: "1rem", display: "flex", justifyContent: "end", zIndex: 100
         }}>
             <WalletMultiButton
-                startIcon={<img src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} width={20} />}
+                startIcon={<img alt="" src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} width={20} />}
                 endIcon={<TiArrowSortedDown />}
             />
         </nav>
