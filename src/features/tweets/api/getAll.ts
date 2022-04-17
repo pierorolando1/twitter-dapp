@@ -14,6 +14,10 @@ export const getAllTweets = async (wallet: anchor.Wallet) => {
             (a, b) => b.account.postTime.toNumber() - a.account.postTime.toNumber(),
         )
 
+        console.log("YO", postsData.map(p => {
+            return p.account.index.toString()
+        }))
+
         return postsData
 
     } catch (error) {
