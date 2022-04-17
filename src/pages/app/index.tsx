@@ -16,11 +16,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import ConnectWalletButton from "../../features/wallet/components/ConnectWallet";
 import Tweet from "../../features/tweets/components/Tweet";
-import { ProgramAccount, IdlTypes } from "@project-serum/anchor";
-import { TypeDef } from "@project-serum/anchor/dist/cjs/program/namespace/types";
 import { tweetState } from "../../recoil/tweet";
 import { createNewTweet } from "../../features/tweets/api/createNew";
 import useSWR from "swr";
+import { CLUSTER } from "../../features/program/consts";
 
 
 export const AppScaffold: FC<{
@@ -32,44 +31,60 @@ export const AppScaffold: FC<{
     const setScrollLanding = useSetRecoilState(scrollLanding)
 
     return (
-        <Row>
-            <LeftSidebar />
-            <div
-                onScroll={(e) => {
-                    const element = e.target as HTMLElement
-                    var scrollPercentage = element.scrollTop / (element.scrollHeight - element.clientHeight);
-                    console.log(scrollPercentage)
-                    setScrollLanding(scrollPercentage)
-                }}
-                style={{
+        <>
+            <Row
+                css={{
+                    zIndex: 101,
+                    maxWidth: "100%",
                     width: "100%",
-                    position: "relative",
-                    overflow: "auto",
-                    maxHeight: "100vh",
-                    height: "100vh",
-                    background: "url(/dark-night-river-forest-minimal-art.png) center center no-repeat",
-                    backgroundSize: "cover"
-                }}>
-                <Navbar />
-                <div style={{ paddingTop: "6rem", paddingBottom: pb ? "3rem" : "0" }}>
-                    {
-                        wallet.connected ?
-                            children
-                            :
-                            <>
-                                <Spacer y={3} />
-                                <Container xs>
-                                    <Card css={{ background: "#11111166", px: "0.9rem", py: "2.5rem", backdropFilter: "blur(20px)" }}>
-                                        <Text css={{ textAlign: "center" }} weight="medium" size={20} b>You need to connect your wallet to interact with the app</Text>
-                                        <Spacer />
-                                        <ConnectWalletButton css={{ width: "min-content", mx: "auto" }} />
-                                    </Card>
-                                </Container>
-                            </>
-                    }
+                    position: "fixed",
+                    opacity: 0.8,
+                    background: "$gray900"
+                }}
+                align="center"
+                justify="center"
+            >
+                <Text size="0.8rem" weight="medium" b>You are on the {CLUSTER.toUpperCase()}</Text>
+            </Row>
+            <Row>
+                <LeftSidebar />
+                <div
+                    onScroll={(e) => {
+                        const element = e.target as HTMLElement
+                        var scrollPercentage = element.scrollTop / (element.scrollHeight - element.clientHeight);
+                        console.log(scrollPercentage)
+                        setScrollLanding(scrollPercentage)
+                    }}
+                    style={{
+                        width: "100%",
+                        position: "relative",
+                        overflow: "auto",
+                        maxHeight: "100vh",
+                        height: "100vh",
+                        background: "url(/dark-night-river-forest-minimal-art.jpg) center center no-repeat",
+                        backgroundSize: "cover"
+                    }}>
+                    <Navbar />
+                    <div style={{ paddingTop: "6rem", paddingBottom: pb ? "3rem" : "0" }}>
+                        {
+                            wallet.connected ?
+                                children
+                                :
+                                <>
+                                    <Spacer y={3} />
+                                    <Container xs>
+                                        <Card css={{ background: "#11111166", px: "0.9rem", py: "2.5rem", backdropFilter: "blur(20px)" }}>
+                                            <Text css={{ textAlign: "center" }} weight="medium" size={20} b>You need to connect your wallet to interact with the app</Text>
+                                            <Spacer />
+                                            <ConnectWalletButton css={{ width: "min-content", mx: "auto" }} />
+                                        </Card>
+                                    </Container>
+                                </>
+                        }
+                    </div>
                 </div>
-            </div>
-        </Row>
+            </Row>
+        </>
     )
 }
 
@@ -246,8 +261,9 @@ const NewTweetBox = () => {
                                 await createNewTweet(wallet as any, {
                                     url: "https://res.cloudinary.com/piero-rolando/image/upload/v1632012213/gzl88zcngp0pyirl8xbm.jpg",
                                     name: "Piero Rolando",
-                                    text: "Shit, I forgot I can't delete whatever is here."
+                                    text: value.trim()
                                 })
+                                setValue("")
                                 setTweetRecoil({ ...tweetRecoil, isCreating: false })
 
                             }}
@@ -359,7 +375,7 @@ const Navbar = () => {
 }
 
 const Feed = () => {
-    const [tweets, setTweets] = useState<{ text: string, url: string, name: string }[]>()
+    const [tweets, setTweets] = useState<{ text: string, url: string, name: string, authority: string }[]>()
     const wallet = useWallet()
 
     const { data } = useSWR("tweets", () => getAllTweets(wallet as any))
@@ -370,7 +386,8 @@ const Feed = () => {
             const tweets = data?.map(tweet => ({
                 text: tweet.account.text,
                 url: tweet.account.posterUrl,
-                name: tweet.account.posterName
+                name: tweet.account.posterName,
+                authority: tweet.account.authority.toString()
             }))
 
             console.log(tweets)

@@ -9,11 +9,12 @@ export type TweetProps = {
     tweet: {
         text: string,
         url: string,
-        name: string
+        name: string,
+        authority: string,
     }
 }
 
-const Tweet: FC<TweetProps> = ({ tweet: { text, name, url } }) => {
+const Tweet: FC<TweetProps> = ({ tweet: { text, name, url, authority } }) => {
 
     return (
         <>
@@ -30,7 +31,7 @@ const Tweet: FC<TweetProps> = ({ tweet: { text, name, url } }) => {
                                     <Spacer x={0.2} />
                                     <MdVerified color="var(--nextui-colors-primary)" />
                                     <Spacer x={0.2} />
-                                    <CopyAdress adress="5xx7nMqp5zzPZdGEWSYrmjLbn9X7QgN2mCaMsYDUgCuj" />
+                                    <CopyAdress adress={authority} />
                                 </Row>
                                 <Text h6 weight="medium" css={{ color: "$gray500" }} >Few minutes ago</Text>
                             </Col>
