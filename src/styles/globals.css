@@ -39,3 +39,55 @@ a {
 .wallet-adapter-dropdown-list {
     background-color: #10141f !important;
 }
+
+/* Make clicks pass-through */
+#nprogress {
+  pointer-events: none;
+}
+
+#nprogress .bar {
+  background: #0070F3;
+
+  position: fixed;
+  z-index: 1031;
+  top: 0;
+  left: 0;
+
+  width: 100%;
+  height: 4.5px;
+    animation: updown 1.9s ease-in-out infinite alternate;
+}
+
+@keyframes updown {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0.5;
+    }
+}
+
+/* Fancy blur effect */
+#nprogress .peg {
+  display: block;
+  position: absolute;
+  right: 0px;
+  width: 10000px;
+  height: 100%;
+  box-shadow: 2000px 0px 0px 0.9px #0070F388;
+  opacity: 0.9;
+}
+
+/* Remove these to get rid of the spinner */
+
+.nprogress-custom-parent {
+  overflow: hidden;
+  position: relative;
+    background-color: red;
+}
+
+.nprogress-custom-parent #nprogress .spinner,
+.nprogress-custom-parent #nprogress .bar {
+  position: absolute;
+}
+

@@ -1,25 +1,161 @@
-import { Button, Card, Col, Container, Row, Spacer, Text, Tooltip } from "@nextui-org/react";
+import { Button, Card, Col, Container, Loading, Progress, Row, Spacer, Text, Tooltip } from "@nextui-org/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
-import { FC, useRef, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 
 import { TiArrowSortedDown } from 'react-icons/ti'
 import { IoImage, IoVideocam } from 'react-icons/io5'
-import { HiOutlineDotsHorizontal } from "react-icons/hi"
-import { MdVerified } from "react-icons/md"
-import { delay } from "../../utils";
+import { MdExplore } from "react-icons/md"
+import { BsFillPersonFill } from "react-icons/bs"
 
-const LeftSidebar = () => {
+import { delay } from "../../utils";
+import { getAllTweets } from "../../features/tweets/api/getAll";
+import { useRecoilState, useRecoilValue, useSetRecoilState } from "recoil";
+import { scrollLanding } from "../../recoil/scrollLanding";
+import Link from "next/link";
+import { useRouter } from "next/router";
+import ConnectWalletButton from "../../features/wallet/components/ConnectWallet";
+import Tweet from "../../features/tweets/components/Tweet";
+import { ProgramAccount, IdlTypes } from "@project-serum/anchor";
+import { TypeDef } from "@project-serum/anchor/dist/cjs/program/namespace/types";
+import { tweetState } from "../../recoil/tweet";
+import { createNewTweet } from "../../features/tweets/api/createNew";
+import useSWR from "swr";
+
+
+export const AppScaffold: FC<{
+    children: JSX.Element | JSX.Element[],
+    pb?: boolean
+}> = ({ children, pb = true }) => {
+
+    const wallet = useWallet()
+    const setScrollLanding = useSetRecoilState(scrollLanding)
+
     return (
-        <Col css={{ background: "$gray900", maxWidth: "16rem", height: "100vh" }}>
-            yo
-        </Col>
+        <Row>
+            <LeftSidebar />
+            <div
+                onScroll={(e) => {
+                    const element = e.target as HTMLElement
+                    var scrollPercentage = element.scrollTop / (element.scrollHeight - element.clientHeight);
+                    console.log(scrollPercentage)
+                    setScrollLanding(scrollPercentage)
+                }}
+                style={{
+                    width: "100%",
+                    position: "relative",
+                    overflow: "auto",
+                    maxHeight: "100vh",
+                    height: "100vh",
+                    background: "url(/dark-night-river-forest-minimal-art.png) center center no-repeat",
+                    backgroundSize: "cover"
+                }}>
+                <Navbar />
+                <div style={{ paddingTop: "6rem", paddingBottom: pb ? "3rem" : "0" }}>
+                    {
+                        wallet.connected ?
+                            children
+                            :
+                            <>
+                                <Spacer y={3} />
+                                <Container xs>
+                                    <Card css={{ background: "#11111166", px: "0.9rem", py: "2.5rem", backdropFilter: "blur(20px)" }}>
+                                        <Text css={{ textAlign: "center" }} weight="medium" size={20} b>You need to connect your wallet to interact with the app</Text>
+                                        <Spacer />
+                                        <ConnectWalletButton css={{ width: "min-content", mx: "auto" }} />
+                                    </Card>
+                                </Container>
+                            </>
+                    }
+                </div>
+            </div>
+        </Row>
     )
 }
+
+
+const icons = {
+    home: <svg stroke="currentColor" fill="none" stroke-width="0" viewBox="0 0 24 24" height="21" width="21" xmlns="http://www.w3.org/2000/svg"><path stroke="currentColor" stroke-width="2" d="M1 22V9.76a2 2 0 01.851-1.636l9.575-6.72a1 1 0 011.149 0l9.574 6.72A2 2 0 0123 9.76V22a1 1 0 01-1 1h-5.333a1 1 0 01-1-1v-5.674a1 1 0 00-1-1H9.333a1 1 0 00-1 1V22a1 1 0 01-1 1H2a1 1 0 01-1-1z"></path></svg>,
+    explore: <MdExplore size={21} />,
+    profile: <BsFillPersonFill size={21} />,
+}
+
+const keysIcons = ["home", "explore", "profile"] as const
+
+const NavLink: FC<{
+    href: string,
+    as?: string,
+    title: string,
+    disabled?: boolean,
+    icon: typeof keysIcons[number],
+}> = ({ href, title, disabled, as, icon }) => {
+
+    const { asPath } = useRouter()
+
+    const style = !disabled
+        ? asPath === href || asPath === as ? "active" : "normal"
+        : "disabled"
+
+    const state = {
+        "normal": "$gray700",
+        "disabled": "$gray900",
+        "active": "$primary"
+    }
+
+    console.log(asPath)
+
+    return (
+        <>
+            <Link href={href}>
+                <Button light={style == "normal" || style == "disabled"} bordered={style == "active"} disabled={disabled}>
+                    <Row css={{ color: state[style] }} align="center">
+                        {
+                            icons[icon]
+                        }
+                        <Spacer x={0.6} />
+                        <Text color="inherit">{title}</Text>
+                    </Row>
+                </Button>
+            </Link>
+            <Spacer y={0.5} />
+        </>
+    )
+}
+
+
+const LeftSidebar = () => {
+
+    console.log("yo")
+    return (
+        <Row
+            align="center"
+            justify="center"
+            css={{
+                flexDirection: "column",
+                maxWidth: "16rem", height: "100vh",
+                boxShadow: "16px 0px 130px 50px rgba(0,0,0,1)",
+            }}
+        >
+            <NavLink href="/app" title="Home" icon="home" />
+            <NavLink href="/app/explore" disabled title="Explore" icon="explore" />
+            <NavLink href="/app/profile" title="Profile" icon="profile" />
+
+            <Spacer y={3} />
+
+            <Button rounded>
+                Tweet
+            </Button>
+        </Row >
+    )
+}
+
+
 
 const NewTweetBox = () => {
 
     const [value, setValue] = useState("");
+    const [tweetRecoil, setTweetRecoil] = useRecoilState(tweetState);
+
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
 
     const wallet = useWallet()
@@ -30,16 +166,18 @@ const NewTweetBox = () => {
         setValue(e.target.value.trim());
     };
 
-
-
     return (
-        <Container xs>
-            <Card css={{ background: "#11111188", py: "0.1rem", px: "0.5rem", backdropFilter: "blur(20px)" }}>
+        <Container xs css={{}}>
+            <Card css={{ position: "relative", background: "#11111188", backdropFilter: "blur(20px)" }}>
+
+
+
                 <Row align="center" justify="center">
                     {
                         value.length == 0 &&
                         <img width={45} src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} />
                     }
+
                     <textarea
                         ref={textAreaRef}
                         onChange={handleChange}
@@ -64,14 +202,17 @@ const NewTweetBox = () => {
                     align="center"
                     justify="center"
                 >
-                    <Button color="success" css={{
-                        borderColor: "$gray800",
-                        minWidth: "8rem",
-                        height: "auto",
-                        "&:hover": {
-                            borderColor: "$success",
-                        },
-                    }} rounded bordered >
+                    <Button
+                        color="success"
+                        css={{
+                            borderColor: "$gray800",
+                            minWidth: "8rem",
+                            height: "auto",
+                            "&:hover": {
+                                borderColor: "$success",
+                            },
+                        }}
+                        rounded bordered>
                         <IoImage style={{
                             filter: "drop-shadow(1px 2px 3px green)",
                             width: "1.5rem", height: "1.5rem"
@@ -97,20 +238,57 @@ const NewTweetBox = () => {
                         <span>Video</span>
                     </Button>
                     {
-                        value.length > 0 && <Button css={{
-                            marginLeft: "auto",
-                            minWidth: "8rem",
-                        }} rounded >Publish</Button>
+                        value.length > 0 &&
+                        <Button
+                            disabled={tweetRecoil.isCreating}
+                            onClick={async () => {
+                                setTweetRecoil({ ...tweetRecoil, isCreating: true })
+                                await createNewTweet(wallet as any, {
+                                    url: "https://res.cloudinary.com/piero-rolando/image/upload/v1632012213/gzl88zcngp0pyirl8xbm.jpg",
+                                    name: "Piero Rolando",
+                                    text: "Shit, I forgot I can't delete whatever is here."
+                                })
+                                setTweetRecoil({ ...tweetRecoil, isCreating: false })
+
+                            }}
+                            css={{
+                                marginLeft: "auto",
+                                minWidth: "8rem",
+                            }}
+                            rounded>Publish</Button>
                     }
-
-
                 </Row>
+                {
+                    tweetRecoil.isCreating &&
+                    <div
+                        style={{
+                            zIndex: 1000,
+                            position: "absolute",
+                            top: "0",
+                            left: "0",
+                            borderRadius: "14px",
+                            padding: "2px",
+                            width: "100%",
+                            height: "100%",
+                            background: "rgba(0,0,0,0.7)",
+                        }}
+                    >
+                        <Progress
+                            css={{
+                                height: "0.3rem"
+                            }}
+                            indeterminated
+                            status="primary"
+                            color="primary"
+                        />
+                    </div>
+                }
             </Card>
-        </Container>
+        </Container >
     )
 }
 
-const CopyAdress: FC<{ adress: string }> = ({ adress }) => {
+export const CopyAdress: FC<{ adress: string }> = ({ adress }) => {
 
     enum CopyStatus {
         None,
@@ -134,7 +312,7 @@ const CopyAdress: FC<{ adress: string }> = ({ adress }) => {
     const [status, setStatus] = useState(CopyStatus.None)
 
     const truncateAdress = (adress: string) => {
-        return adress.substring(0, 4) + "..." + adress.substring(adress.length - 4, adress.length);
+        return adress.substring(0, 5) + "..." + adress.substring(adress.length - 5, adress.length);
     }
 
     return (
@@ -160,77 +338,69 @@ const CopyAdress: FC<{ adress: string }> = ({ adress }) => {
     )
 }
 
-const Tweet = () => {
+
+
+const Navbar = () => {
+    const wallet = useWallet()
+    const scroll = useRecoilValue(scrollLanding)
 
     return (
-        <>
-            <Spacer />
-            <Container xs>
-                <Card css={{ background: "#11111188", py: "0.4rem", px: "0.4rem", backdropFilter: "blur(20px)" }}>
-                    <Row>
-                        <Row align="center" >
-                            <img width={45} style={{ borderRadius: "10rem" }} src="https://pbs.twimg.com/profile_images/1503591435324563456/foUrqiEw_400x400.jpg" />
-                            <Spacer x={0.5} />
-                            <Col>
-                                <Row align="center">
-                                    <Text b weight="medium">Elon Musk</Text>
-                                    <Spacer x={0.2} />
-                                    <MdVerified color="var(--nextui-colors-primary)" />
-                                    <Spacer x={0.2} />
-                                    <CopyAdress adress="5xx7nMqp5zzPZdGEWSYrmjLbn9X7QgN2mCaMsYDUgCuj" />
-                                </Row>
-                                <Text h6 weight="medium" css={{ color: "$gray500" }} >Few minutes ago</Text>
-                            </Col>
-                        </Row>
-                        <Button size="xs" light css={{ minWidth: "2rem", color: "$gray500" }}>
-                            <HiOutlineDotsHorizontal size={19} />
-                        </Button>
-                    </Row>
-                    <Spacer y={0.7} />
-                    <Row>
-                        <Spacer x={2.5} />
-                        <Text css={{ color: "$gray200", letterSpacing: "-0.01em" }}>Great work by Tesla Texas Team!! Built & delivered first Giga Texas production cars & threw a killer opening party</Text>
-                    </Row>
-                </Card>
-            </Container >
-        </>
+        <nav style={{
+            background: `rgba(0,0,0,${scroll})`,
+            backdropFilter: `blur(${scroll == 0 ? 0 : 12}px)`,
+            position: "fixed", top: 0, left: 0, width: "100%", padding: "1rem", display: "flex", justifyContent: "end", zIndex: 100
+        }}>
+            <WalletMultiButton
+                startIcon={<img src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} width={20} />}
+                endIcon={<TiArrowSortedDown />}
+            />
+        </nav>
     )
 }
 
-
-const Home = () => {
+const Feed = () => {
+    const [tweets, setTweets] = useState<{ text: string, url: string, name: string }[]>()
     const wallet = useWallet()
 
+    const { data } = useSWR("tweets", () => getAllTweets(wallet as any))
+
+    useEffect(() => {
+
+        (async () => {
+            const tweets = data?.map(tweet => ({
+                text: tweet.account.text,
+                url: tweet.account.posterUrl,
+                name: tweet.account.posterName
+            }))
+
+            console.log(tweets)
+            setTweets(tweets ?? [])
+        })()
+    }, [wallet, data])
+
+
+    return <>{
+
+        tweets?.length ?? 0 > 0 ?
+            tweets?.map((tweet, index) => (
+                <Tweet key={index} tweet={tweet} />
+            ))
+            :
+            <Loading size="lg" css={{ mx: " auto", width: "100%" }} />
+    }</>
+
+}
+
+const Home = () => {
+
+
     return (
-        <Row>
-            <LeftSidebar />
-            <div style={{
-                width: "100%",
-                position: "relative",
-                overflow: "auto",
-                maxHeight: "100vh",
-                background: "url(/dark-night-river-forest-minimal-art.png) center center no-repeat",
-                backgroundSize: "cover"
-            }}>
-                <nav style={{ position: "fixed", top: 0, left: 0, width: "100%", padding: "1rem", display: "flex", justifyContent: "end" }}>
-                    <WalletMultiButton
-                        startIcon={<img src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} width={20} />}
-                        endIcon={<TiArrowSortedDown />}
-                    />
-                </nav>
-                <div
-                    style={{ paddingTop: "5rem", paddingBottom: "3rem" }}>
-                    <NewTweetBox />
-                    <Spacer />
-                    <Tweet />
-                    <Tweet />
-                    <Tweet />
-                    <Tweet />
-                    <Tweet />
-                </div>
-            </div>
-        </Row>
-    );
+        <AppScaffold>
+            <NewTweetBox />
+            <Spacer />
+            <Feed />
+        </AppScaffold>
+    )
 }
 
 export default Home;
