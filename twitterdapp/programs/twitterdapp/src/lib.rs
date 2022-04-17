@@ -36,6 +36,8 @@ pub mod twitterdapp {
 
         // Get tweet from context
         let tweet = &mut ctx.accounts.tweet;
+
+        tweet.authority = ctx.accounts.authority.key();
         tweet.text = text;
         tweet.poster_name = twitter_name;
         tweet.poster_url = twitter_url;
