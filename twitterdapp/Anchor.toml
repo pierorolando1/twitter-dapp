@@ -1,11 +1,11 @@
-[programs.localnet]
-twitterdapp = "Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS"
+[programs.devnet]
+twitterdapp = "8uQLNTb5sd8YieHMZ2TS4fj58g8rRC5E1cScmPA5CHj"
 
 [registry]
 url = "https://anchor.projectserum.com"
 
 [provider]
-cluster = "localnet"
+cluster = "devnet"
 wallet = "/home/pickfordpatriot/.config/solana/id.json"
 
 [scripts]
