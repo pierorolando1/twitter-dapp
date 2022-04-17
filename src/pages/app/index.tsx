@@ -1,4 +1,4 @@
-import { Button, Card, Col, Container, Loading, Progress, Row, Spacer, Text, Tooltip } from "@nextui-org/react";
+import { Button, Card, Col, Container, Loading, Modal, Progress, Radio, Row, Spacer, Text, Tooltip } from "@nextui-org/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FC, useEffect, useRef, useState } from "react";
@@ -32,6 +32,16 @@ export const AppScaffold: FC<{
 
     return (
         <>
+            <Modal open preventClose css={{
+                py: "1rem",
+                px: "2rem"
+            }}>
+                <Radio.Group size="xs" value="default">
+                    <Radio size="sm" value="default">Use default photo</Radio>
+                    <Radio size="sm" value="url">Use url</Radio>
+                    <Radio size="sm" value="upload">Upload photo</Radio>
+                </Radio.Group>
+            </Modal>
             <Row
                 css={{
                     zIndex: 101,
