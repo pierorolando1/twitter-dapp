@@ -2,13 +2,20 @@ use anchor_lang::prelude::*;
 use anchor_spl::token::{self, Token};
 use std::mem::size_of;
 
-declare_id!("Fg6PaFpoGXkYsidMpWTK6W2BeZ7FEfcYkg476zPFsLnS");
+declare_id!("98uQLNTb5sd8YieHMZ2TS4fj58g8rRC5E1cScmPA5CHj");
+
+// Post and comment text length
+pub const TEXT_LENGTH: usize = 1024;
+// Username length
+pub const USER_NAME_LENGTH: usize = 100;
+// User profile imaage url length
+pub const USER_URL_LENGTH: usize = 255;
 
 #[program]
 pub mod twitterdapp {
     use super::*;
 
-    pub fn create_state(ctx: Context<CreateTwitterState>) -> Result<()> {
+    pub fn create_state(ctx: Context<CreateTwitterState>) -> ProgramResult {
         // Get state from context
         let state = &mut ctx.accounts.state;
         // Save authority to state
@@ -23,19 +30,9 @@ pub mod twitterdapp {
         text: String,
         twitter_name: String,
         twitter_url: String,
-    ) -> Result<()> {
+    ) -> ProgramResult {
         // Get state from context
         let state = &mut ctx.accounts.state;
-
-        // Check if tweet is empty
-        if text.is_empty() {
-            return Err(TweetErrors::Empty.into());
-        }
-
-        // Check if tweet is too long
-        if text.len() > TEXT_LENGTH {
-            return Err(TweetErrors::TooLong.into());
-        }
 
         // Get tweet from context
         let tweet = &mut ctx.accounts.tweet;
@@ -55,7 +52,7 @@ pub mod twitterdapp {
         text: String,
         commenter_name: String,
         commenter_url: String,
-    ) -> Result<()> {
+    ) -> ProgramResult {
         let tweet = &mut ctx.accounts.tweet;
         let reply = &mut ctx.accounts.reply;
         reply.authority = ctx.accounts.authority.key();
@@ -71,12 +68,7 @@ pub mod twitterdapp {
     }
 }
 
-// Post and comment text length
-pub const TEXT_LENGTH: usize = 1024;
-// Username length
-pub const USER_NAME_LENGTH: usize = 100;
-// User profile imaage url length
-pub const USER_URL_LENGTH: usize = 255;
+// TWEET
 
 #[derive(Accounts)]
 pub struct CreateTweet<'info> {
@@ -96,6 +88,7 @@ pub struct CreateTweet<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
+    /// CHECK: This is not dangerous because
     pub system_program: UncheckedAccount<'info>,
 
     #[account(constraint = token_program.key == &token::ID)]
@@ -115,7 +108,9 @@ pub struct Tweet {
     pub index: u64,
     pub post_time: i64,
 }
+// END TWEET
 
+// STATE
 #[derive(Accounts)]
 pub struct CreateTwitterState<'info> {
     // Authenticating state account
@@ -124,7 +119,7 @@ pub struct CreateTwitterState<'info> {
         seeds = [b"state".as_ref()],
         bump,
         payer = authority,
-        space = size_of::<StateTwitterAccount>() + 7
+        space = size_of::<StateTwitterAccount>() + 8
     )]
     pub state: Account<'info, StateTwitterAccount>,
 
@@ -132,7 +127,7 @@ pub struct CreateTwitterState<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
-    /// System program
+    /// CHECK: This is not dangerous because
     pub system_program: UncheckedAccount<'info>,
 
     // Token program
@@ -145,7 +140,9 @@ pub struct StateTwitterAccount {
     pub authority: Pubkey,
     pub tweet_count: u64,
 }
+// END STATE
 
+// REPLY
 #[derive(Accounts)]
 pub struct CreateReply<'info> {
     #[account(mut, seeds = [b"state".as_ref(), tweet.index.to_be_bytes().as_ref()], bump)]
@@ -164,6 +161,7 @@ pub struct CreateReply<'info> {
     #[account(mut)]
     pub authority: Signer<'info>,
 
+    /// CHECK: This is not dangerous because
     pub system_program: UncheckedAccount<'info>,
 
     #[account(constraint = token_program.key == &token::ID)]
@@ -180,12 +178,4 @@ pub struct Reply {
     pub commenter_url: String,
     pub index: u64,
     pub post_time: i64,
-}
-
-#[error_code]
-pub enum TweetErrors {
-    #[msg("Tweet cannot be empty")]
-    Empty,
-    #[msg("Tweet cannot be longer than certain number of characters")]
-    TooLong,
 }

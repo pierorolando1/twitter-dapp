@@ -1,10 +1,12 @@
-import { FacebookClone } from "../target/types/facebook_clone";
+import * as anchor from '@project-serum/anchor';
+import { Program } from '@project-serum/anchor';
 
-const anchor = require('@project-serum/anchor');
-const { TOKEN_PROGRAM_ID } = require("@solana/spl-token");
-const _ = require('lodash')
+import { Twitterdapp } from "../target/types/twitterdapp"
+
+import { TOKEN_PROGRAM_ID } from "@solana/spl-token";
 const { web3 } = anchor
 const { SystemProgram } = web3
+
 const assert = require("assert");
 const utf8 = anchor.utils.bytes.utf8;
 const provider = anchor.Provider.local()
@@ -17,7 +19,10 @@ const defaultAccounts = {
 
 // Configure the client to use the local cluster.
 anchor.setProvider(provider);
-const program = anchor.workspace.FacebookClone as Program<FacebookClone>;
+
+// @ts-ignore
+const program = anchor.workspace.Twitterdapp as Program<Twitterdapp>;
+
 let creatorKey = provider.wallet.publicKey;
 let stateSigner;
 
@@ -28,7 +33,7 @@ const run = async () => {
     );
 
     try {
-        const stateInfo = await program.account.stateAccount.fetch(stateSigner);
+        const stateInfo = await program.account.stateTwitterAccount.fetch(stateSigner);
         console.log(stateInfo);
     }
     catch {
@@ -40,7 +45,7 @@ const run = async () => {
             },
         })
 
-        const stateInfo = await program.account.stateAccount.fetch(stateSigner);
+        const stateInfo = await program.account.stateTwitterAccount.fetch(stateSigner);
         console.log(stateInfo);
         assert(stateInfo.authority.toString() === creatorKey.toString(), "State Creator is Invalid");
     }
