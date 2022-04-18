@@ -1,23 +1,9 @@
-import * as anchor from "@project-serum/anchor"
-
 import { Button } from "@nextui-org/react"
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
-import { utf8 } from "@project-serum/anchor/dist/cjs/utils/bytes"
-import { getProgramInstance } from "../features/program/api/getProgramInstance"
 import { useWallet } from "@solana/wallet-adapter-react"
-import { TOKEN_PROGRAM_ID } from "@project-serum/anchor/dist/cjs/utils/token"
-import { SOLANA_HOST } from "../features/program/consts"
 import { createNewTweet } from "../features/tweets/api/createNew"
 
-
-const defaultAccounts = {
-    tokenProgram: TOKEN_PROGRAM_ID,
-    clock: anchor.web3.SYSVAR_CLOCK_PUBKEY,
-    systemProgram: anchor.web3.SystemProgram.programId,
-}
-
-
-export default () => {
+export default function Tests() {
     const wallet = useWallet()
 
     return (
