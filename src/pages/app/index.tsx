@@ -1,4 +1,4 @@
-import { Button, Card, Col, Container, Loading, Modal, Progress, Radio, Row, Spacer, Text, Tooltip } from "@nextui-org/react";
+import { Button, Card, Container, Loading, Progress, Row, Spacer, Text, Tooltip } from "@nextui-org/react";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import { FC, useEffect, useRef, useState } from "react";
@@ -20,6 +20,8 @@ import { tweetState } from "../../recoil/tweet";
 import { createNewTweet } from "../../features/tweets/api/createNew";
 import useSWR from "swr";
 import { CLUSTER } from "../../features/program/consts";
+import InformationModal from "../../features/user/components/InformationModal";
+import { userGlobalAtom } from "../../features/user/api/recoil/userGlobalAtom";
 
 
 export const AppScaffold: FC<{
@@ -30,18 +32,18 @@ export const AppScaffold: FC<{
     const wallet = useWallet()
     const setScrollLanding = useSetRecoilState(scrollLanding)
 
+    const [userGlobal, setUserGlobal] = useRecoilState(userGlobalAtom)
+
+    useEffect(() => {
+        setUserGlobal({
+            name: localStorage.getItem("name") ?? "",
+            photoUrl: localStorage.getItem("photoUrl") ?? undefined,
+        })
+    }, [])
+
     return (
         <>
-            <Modal open preventClose css={{
-                py: "1rem",
-                px: "2rem"
-            }}>
-                <Radio.Group size="xs" value="default">
-                    <Radio size="sm" value="default">Use default photo</Radio>
-                    <Radio size="sm" value="url">Use url</Radio>
-                    <Radio size="sm" value="upload">Upload photo</Radio>
-                </Radio.Group>
-            </Modal>
+            <InformationModal />
             <Row
                 css={{
                     zIndex: 101,
@@ -179,6 +181,7 @@ const LeftSidebar = () => {
 const NewTweetBox = () => {
 
     const [value, setValue] = useState("");
+    const [userRecoil, setUserRecoil] = useRecoilState(userGlobalAtom)
     const [tweetRecoil, setTweetRecoil] = useRecoilState(tweetState);
 
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
@@ -194,13 +197,15 @@ const NewTweetBox = () => {
     return (
         <Container xs css={{}}>
             <Card css={{ position: "relative", background: "#11111188", backdropFilter: "blur(20px)" }}>
-
-
-
                 <Row align="center" justify="center">
                     {
                         value.length == 0 &&
-                        <img width={45} alt="" src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} />
+                        <img
+                            style={{ objectFit: "cover", borderRadius: "50%" }}
+                            width={45}
+                            height={45}
+                            alt=""
+                            src={userRecoil.photoUrl == "" ? `https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg` : userRecoil.photoUrl} />
                     }
 
                     <textarea
@@ -262,6 +267,11 @@ const NewTweetBox = () => {
                         <Spacer x={0.4} />
                         <span>Video</span>
                     </Button>
+                    <Spacer x={0.5} />
+                    {
+                        value.length > 0 &&
+                        <Text color="primary" size={13} b>{value.length}/2024</Text>
+                    }
                     {
                         value.length > 0 &&
                         <Button
@@ -369,6 +379,7 @@ export const CopyAdress: FC<{ adress: string }> = ({ adress }) => {
 const Navbar = () => {
     const wallet = useWallet()
     const scroll = useRecoilValue(scrollLanding)
+    const user = useRecoilValue(userGlobalAtom)
 
     return (
         <nav style={{
@@ -377,7 +388,15 @@ const Navbar = () => {
             position: "fixed", top: 0, left: 0, width: "100%", padding: "1rem", display: "flex", justifyContent: "end", zIndex: 100
         }}>
             <WalletMultiButton
-                startIcon={<img alt="" src={`https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg`} width={20} />}
+                startIcon={
+                    <img alt="" src={user.photoUrl == "" || !user.photoUrl ? `https://avatars.dicebear.com/api/bottts/${wallet.publicKey}.svg` : user.photoUrl}
+                        style={{
+                            objectFit: "cover",
+                            borderRadius: "50%",
+                        }}
+                        height={20}
+                        width={20}
+                    />}
                 endIcon={<TiArrowSortedDown />}
             />
         </nav>

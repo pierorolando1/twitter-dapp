@@ -5,7 +5,7 @@ use std::mem::size_of;
 declare_id!("98uQLNTb5sd8YieHMZ2TS4fj58g8rRC5E1cScmPA5CHj");
 
 // Post and comment text length
-pub const TEXT_LENGTH: usize = 1024;
+pub const TEXT_LENGTH: usize = 2024;
 // Username length
 pub const USER_NAME_LENGTH: usize = 100;
 // User profile imaage url length
