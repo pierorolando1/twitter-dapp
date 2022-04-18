@@ -158,6 +158,10 @@ const LeftSidebar = () => {
             align="center"
             justify="center"
             css={{
+                display: "none",
+                "@xs": {
+                    display: "flex"
+                },
                 flexDirection: "column",
                 maxWidth: "16rem", height: "100vh",
                 boxShadow: "16px 0px 130px 50px rgba(0,0,0,1)",
