@@ -24,7 +24,11 @@ const UrlInput = () => {
 
 const UploadInput = () => {
     return <>
-        <Button auto light>Upload file</Button>
+        <Button
+            onClick={() => {/*TODO: use ipfs or someshit*/}}
+            auto light
+        >Upload file</Button>
+        
         <Spacer />
         <Input css={{ display: "none" }} hidden type="file" color="primary" />
     </>
